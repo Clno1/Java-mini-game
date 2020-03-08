@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.awt.geom.*;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -21,27 +22,37 @@ public class MapFrame extends JFrame {
 	public int total_visit;
 	
 	public MapFrame(Setting setting) {
-		Init(setting);
-	}
-	
-	public void Init(Setting setting) {
 		this.row=setting.row; this.col=setting.col; this.mine=setting.mine; 
 		this.map=calc_map(setting);
 		mine_button=new JButton[row][col];
 		visit=new boolean[row][col];
-		int fwidth=row/9*400,fheight=col/9*400;
+		total_visit=0;
+		int fwidth=row/9*400,fheight=col/9*400+70;
 		setSize(fwidth,fheight);
-		setLayout(new GridLayout(row,col));
+		JPanel TimeJpanel=new JPanel();
+		JPanel MapJpanel=new JPanel();
+		
+		JLabel TimeText=new JLabel("Time : 0");
+		TimeJpanel.add(TimeText);
+		
+		myTimer timer =new myTimer(TimeText);
+	    Timer timelistener =new Timer(1000,timer);
+	    timelistener.start();  //开始定时器
+		
+		MapJpanel.setPreferredSize(new Dimension(row/9*400,col/9*400));
+		MapJpanel.setLayout(new GridLayout(row,col));
 		for (int i=0;i<row*col;i++) {
 			int x=i/this.col;
 			int y=i%this.row;
 			mine_button[x][y]=new JButton();
 			mine_button[x][y].setBackground(new Color(81,168,221));
 			mine_button[x][y].addActionListener(new click_listener(x,y));
-			add(mine_button[x][y]);
+			MapJpanel.add(mine_button[x][y]);
 		}
 		
-		total_visit=0;		
+		setLayout(new BorderLayout());
+		add(TimeJpanel,BorderLayout.NORTH);
+		add(MapJpanel,BorderLayout.SOUTH);		
 	}
 	
 	class click_listener implements ActionListener {
@@ -112,6 +123,21 @@ public class MapFrame extends JFrame {
 					if (map[tx][ty]>0)mine_button[tx][ty].setText(""+map[tx][ty]);
 				}
 			}
+		}
+	}
+	
+	/**
+	 * 计时器
+	 */
+	class myTimer implements ActionListener {
+		JLabel text;
+		long start;
+		public myTimer(JLabel text) {
+			this.text=text;
+			start=System.currentTimeMillis();
+		}
+		public void actionPerformed(ActionEvent event) {
+			text.setText("Time : "+(System.currentTimeMillis()-start)/1000);
 		}
 	}
 	
